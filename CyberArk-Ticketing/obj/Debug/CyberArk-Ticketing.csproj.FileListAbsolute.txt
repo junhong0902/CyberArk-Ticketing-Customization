@@ -6,3 +6,5 @@ C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\Cyb
 C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.csproj.CopyComplete
 C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.dll
 C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.pdb
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Debug\Newtonsoft.Json.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Debug\Newtonsoft.Json.xml
