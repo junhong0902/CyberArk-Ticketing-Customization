@@ -183,11 +183,9 @@ namespace CyberArk.Samples
                 }
                 else 
                 {
-                    // Here Starts the validation process. 
-                    
-                    
-                    
-                    /** If want to invoke powershell
+                    // Here is the validation process. 
+                                        
+                    /** If want to invoke powershell script
                      * 
                      *
                     ProcessStartInfo validation = new ProcessStartInfo();
