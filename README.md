@@ -1,8 +1,9 @@
 # CyberArk-TicketingPlugin
  
 Main code: Main.cs
-### To Do
-Install Newtonsoft.Json to parse Json (Project -> manage nuget)
+### To Do if want to recreate dll
+
+In visual studio install Newtonsoft.Json to parse Json (Project -> manage nuget)
 
 ### Functions implemented:
 1. APP hash validation (Using AIM hashing method)
