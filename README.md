@@ -1,6 +1,6 @@
 # CyberArk-TicketingPlugin
  
-Main code: Class1.cs
+Main code: Main.cs
 ### To Do
 Install Newtonsoft.Json to parse Json (Project -> manage nuget)
 
