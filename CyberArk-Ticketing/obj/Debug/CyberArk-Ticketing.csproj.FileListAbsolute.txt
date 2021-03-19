@@ -1,0 +1,8 @@
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Debug\CyberArk-Ticketing.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Debug\CyberArk-Ticketing.pdb
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Debug\CyberArk.PasswordVault.PublicInterfaces.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.csprojAssemblyReference.cache
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.csproj.CoreCompileInputs.cache
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.csproj.CopyComplete
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Debug\CyberArk-Ticketing.pdb
