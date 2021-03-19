@@ -26,6 +26,7 @@ namespace CyberArk.Samples
         #region ITicketVaildatorEx Members
 
 
+        #region Public Parameters
         //set Ticketing Parameters
         public string ticketingOutputUserMessage = string.Empty;
         public string paramHashApp = string.Empty;
@@ -44,6 +45,8 @@ namespace CyberArk.Samples
         //set audit log
         public string auditLog = string.Empty;
 
+        #endregion
+
         /// <summary>
         /// This method is called by PVWA when a password object is requested and the request
         /// needs to be validated against a ticketing system.
@@ -55,6 +58,8 @@ namespace CyberArk.Samples
         /// <param name="ticketingOutput">Out parameter: Will contain the information returned to the PVWA.</param>
         /// <returns>This method must return ‘true’ if the ticket validation succeeds or ‘false’ if it fails.
         /// In case of success, the user will be able to access the requested password.</returns>
+
+        
         public bool ValidateTicket(IValidationParametersEx parameters, out ITicketOutput ticketingOutput)
         {
             bool rc;
@@ -184,7 +189,7 @@ namespace CyberArk.Samples
                 else 
                 {
                     // Here is the validation process. 
-                                        
+
                     /** If want to invoke powershell script
                      * 
                      *
@@ -213,7 +218,7 @@ namespace CyberArk.Samples
                     }
                     */
 
-                    /****** If want to call restapi directly from dll
+                    /** If want to call restapi directly from dll
                      * 
                      * 
                     var client = new RestClient(@"https://comp2.jhdomain.com/AIMWebService/api/Accounts");
@@ -234,7 +239,6 @@ namespace CyberArk.Samples
                     */
 
                     return true;
-
                 }
 
                 //return true;
