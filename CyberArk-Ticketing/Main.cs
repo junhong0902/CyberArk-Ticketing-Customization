@@ -35,6 +35,15 @@ namespace CyberArk.Samples
         public string ModuleDirectory = string.Empty;
         public string paramAPIName = string.Empty;
         public string paramBypassID = string.Empty;
+        public string paramAPIURL = string.Empty;
+
+        //set Info from CyberArk
+        public string cArkRequester = string.Empty;
+        public string cArkPolicyID = string.Empty;
+        public string cArkObjectName = string.Empty;
+        public string cArkSafeName = string.Empty;
+        public string cArklogonID = string.Empty;
+        public string cArklogonPassword = string.Empty;
 
         //set error messages
         public string msgInvalidHash = string.Empty;
@@ -66,7 +75,6 @@ namespace CyberArk.Samples
             bool bValid = false; // Validation result (the return value) - will contain true if validate succeed, false otherwise
             ticketingOutput = new TicketOutput();
 
-
             XmlNode xmlParameters = parameters.XmlNodeParameters;
             string[] internalParameters;
             ParseXmlParameters(xmlParameters, out internalParameters); //Kept the default ParseXML input & output. But parameters are parse to the public variables(not using "internalParameters")
@@ -76,6 +84,12 @@ namespace CyberArk.Samples
             string ticketingSystemName = parameters.SystemName;
 
             string returnedTicketId = parameters.TicketId;
+            cArkRequester = parameters.RequestingUser;
+            cArkPolicyID = parameters.PolicyId;
+            cArkObjectName = parameters.ObjectName;
+            cArkSafeName = parameters.SafeName;
+            cArklogonID = parameters.TicketingConnectionAccount.UserName;
+            cArklogonPassword = parameters.TicketingConnectionAccount.Password;
 
             /****************************************************************************************
              * Writing to the debug log - below is a sample showing how to access the debug log object and 
@@ -190,15 +204,14 @@ namespace CyberArk.Samples
                 {
                     // Here is the validation process. 
 
-                    /** If want to invoke powershell script
-                     * 
-                     *
+                    // If want to invoke powershell script
+                     
                     ProcessStartInfo validation = new ProcessStartInfo();
                     validation.FileName = @"C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe";
                     validation.UseShellExecute = false;
                     validation.RedirectStandardOutput = true;
-                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + ticketID;
-                    Process.Start(validation);
+                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + en64(ticketID) + " " + en64(paramAPIURL) + " " + en64(cArkRequester) + " " + en64(cArkObjectName);
+                    //Process.Start(validation);
 
                     {
                         using (Process processGetTixInfo = Process.Start(validation))
@@ -216,7 +229,7 @@ namespace CyberArk.Samples
                             }
                         }
                     }
-                    */
+                    
 
                     /** If want to call restapi directly from dll
                      * 
@@ -319,7 +332,11 @@ namespace CyberArk.Samples
             }
         }
 
-
+        // base64 encode
+        private string en64(string input)
+        {
+            return (System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(input)));
+        }
 
 
 
@@ -352,6 +369,8 @@ namespace CyberArk.Samples
             paramAPIName = match8.Groups[1].Value;
             Match match9 = Regex.Match(checkParameters, "BypassID\" Value=\"(.*?)\"");
             paramBypassID = match9.Groups[1].Value;
+            Match match10 = Regex.Match(checkParameters, "APIURL\" Value=\"(.*?)\"");
+            paramAPIURL = match10.Groups[1].Value;
 
             //not using parametersArray
             paramtersArray = null;
