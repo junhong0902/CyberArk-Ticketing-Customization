@@ -18,9 +18,7 @@ Get-Content C:\Windows\Temp\PVWA\PVWA.App.log -wait | Select-String -Pattern "Ti
 ```
 
 ### Powershell log
-```
 If enable in logging, powershell log can be found under same directory of powershell script.
-```
 
 ### Postgres limitation
 Do note that postgres is case-sensetive, becareful with data entry.
