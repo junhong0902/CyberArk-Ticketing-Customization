@@ -129,7 +129,7 @@ switch($strActionName)
         }
         else
         {
-            if (((magic $obj) -eq (magic $secrets.obj))  -and ((magic $TicketID) -eq (magic $secrets.ticketid)) -and ((magic $cArkRequester) -eq (magic $secrets.requester)))
+            if (((magic $obj) -eq (magic $secrets.obj)) -and ((magic $TicketID) -eq (magic $secrets.ticketid)) -and ((magic $cArkRequester) -eq (magic $secrets.requester)))
             {
 	            echo "VALID"
             }else

@@ -146,6 +146,7 @@ namespace CyberArk.Samples
             {
                 ticketingOutput.TicketId = returnedTicketId; // Return the validated ticket ID
                 ticketingOutput.TicketAuditOutput = string.Format("{0},{1}", returnedTicketId, auditLog); // Specify any additional information you'd like written to the audit log
+                ticketingOutput.UserMessage = ticketingOutputUserMessage;
             }
 
             return bValid;
