@@ -218,7 +218,12 @@ namespace CyberArk.Samples
                         using (Process processGetTixInfo = Process.Start(validation))
                         {
                             string validationResult = string.Empty;
-                            using (StreamReader readerTask = processGetTixInfo.StandardOutput) validationResult = readerTask.ReadLine();
+                            using (StreamReader readerTask = processGetTixInfo.StandardOutput) validationResult = readerTask.ReadToEnd();
+                            validationResult = validationResult.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
+                            dynamic respond = JsonConvert.DeserializeObject(validationResult);
+                            ticketingOutputUserMessage = de64(respond.exists);
+                            return false;
+                            /*
                             if (validationResult.Trim().ToUpper() == "VALID")
                             {
                                 return true;
@@ -228,19 +233,23 @@ namespace CyberArk.Samples
                                 ticketingOutputUserMessage = msgInvalidTicket;
                                 return false;
                             }
+                            */
                         }
                     }
                     
 
                     /** If want to call restapi directly from dll
                      * 
-                     * 
+                     
                     var client = new RestClient(@"https://comp2.jhdomain.com/AIMWebService/api/Accounts");
                     
                     var json = client.MakeRequest(@"?AppID=Sample&Query=Object=ticketing-dummy");
                     dynamic respond = JsonConvert.DeserializeObject(json);
                     string ValidID = respond.TicketID;
-
+                    ticketingOutputUserMessage = json;
+                    return false;
+                    
+                    
                     if (ticketID.Trim().ToUpper() == ValidID.Trim().ToUpper())
                     {
                         return true;
@@ -337,6 +346,11 @@ namespace CyberArk.Samples
         private string en64(string input)
         {
             return (System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(input)));
+        }
+
+        private string de64(dynamic input)
+        {
+            return (System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Convert.ToString(input))));
         }
 
 

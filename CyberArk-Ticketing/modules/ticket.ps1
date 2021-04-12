@@ -6,6 +6,16 @@ $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 $scriptPath = $scriptPath + "\ticketinglog.txt"
 Start-Transcript -path $scriptPath | out-null #Start-Transcript -path $scriptPath -append | out-null
 
+# Base64Encode
+
+function encode
+{
+    Param (
+        $inputstg
+    )
+    return [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($inputstg))
+}
+
 # Trim and Clean string
 function magic
 {
@@ -93,8 +103,48 @@ elseif ($TicketID.Substring(0, [Math]::Min($TicketID.Length, 3)).ToUpper() -eq '
     echo "INVALID"
 }
 
+$ToCyberArk = @{ 'Exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = '20210101-000000'; 'vte' = '20211231-235959'}
 
+switch($strActionName)
+{
+    'CHG'
+    {    
+        $secrets = (Invoke-RestMethod -Method Get -Uri "$restURL" -ContentType application/json)
+        if (((magic $obj) -eq (magic $secrets.obj)) -and ((magic $secrets.approver) -ne (magic $cArkRequester)) -and ((magic $TicketID) -eq (magic $secrets.ticketid)) -and ((magic $cArkRequester) -eq (magic $secrets.requester)))
+        {
+	        #echo "VALID"
+            $ToCyberArk.Exists = 'true'
+            $ToCyberArk.requester = (magic $secrets.requester)
+            $ToCyberArk.approver = (magic $secrets.approver)
+            $ToCyberArk.obj = (magic $secrets.obj)
 
+        }else
+        {
+	        #echo "INVALID"
+            $ToCyberArk.Exists = 'true'
+        }
+    }
+    'INC'
+    {
+        $restURLget =  $restURL + "?ticketid=eq." + $TicketID.tolower()
+        $secrets = (Invoke-RestMethod -Method Get -Uri "$restURLget" -ContentType application/json)
+        if ($secrets.get_length() -eq 0)
+        {
+            $ToCyberArk.Exists = 'false'
+        }
+        else
+        {
+            $ToCyberArk.Exists = 'true'
+            $ToCyberArk.requester = (magic $secrets.requester)
+            $ToCyberArk.obj = (magic $secrets.obj)
+        }
+    }
+}
+
+echo $ToCyberArk 
+
+<#
+# Original code
 ### incident or change request
 switch($strActionName)
 {
@@ -139,7 +189,7 @@ switch($strActionName)
         }
     }
 }
-
+#>
 
 
 
