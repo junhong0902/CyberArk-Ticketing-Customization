@@ -8,13 +8,14 @@ Start-Transcript -path $scriptPath | out-null #Start-Transcript -path $scriptPat
 
 # Base64Encode
 
-function encode
+function 64encode
 {
     Param (
         $inputstg
     )
     return [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($inputstg))
 }
+
 
 # Trim and Clean string
 function magic
@@ -103,7 +104,7 @@ elseif ($TicketID.Substring(0, [Math]::Min($TicketID.Length, 3)).ToUpper() -eq '
     echo "INVALID"
 }
 
-$ToCyberArk = @{ 'Exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = '20210101-000000'; 'vte' = '20211231-235959'}
+$ToCyberArk = @{ 'exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = '20210101-000000'; 'vte' = '20211231-235959'}
 
 switch($strActionName)
 {
@@ -113,15 +114,15 @@ switch($strActionName)
         if (((magic $obj) -eq (magic $secrets.obj)) -and ((magic $secrets.approver) -ne (magic $cArkRequester)) -and ((magic $TicketID) -eq (magic $secrets.ticketid)) -and ((magic $cArkRequester) -eq (magic $secrets.requester)))
         {
 	        #echo "VALID"
-            $ToCyberArk.Exists = 'true'
-            $ToCyberArk.requester = (magic $secrets.requester)
-            $ToCyberArk.approver = (magic $secrets.approver)
-            $ToCyberArk.obj = (magic $secrets.obj)
+            $ToCyberArk.Exists = 64encode 'true'
+            $ToCyberArk.requester = 64encode (magic $secrets.requester)
+            $ToCyberArk.approver = 64encode (magic $secrets.approver)
+            $ToCyberArk.obj = 64encode (magic $secrets.obj)
 
         }else
         {
 	        #echo "INVALID"
-            $ToCyberArk.Exists = 'true'
+            $ToCyberArk.exists = 'true'
         }
     }
     'INC'
@@ -130,18 +131,21 @@ switch($strActionName)
         $secrets = (Invoke-RestMethod -Method Get -Uri "$restURLget" -ContentType application/json)
         if ($secrets.get_length() -eq 0)
         {
-            $ToCyberArk.Exists = 'false'
+            $ToCyberArk.exists = 'false'
         }
         else
         {
-            $ToCyberArk.Exists = 'true'
-            $ToCyberArk.requester = (magic $secrets.requester)
-            $ToCyberArk.obj = (magic $secrets.obj)
+            $ToCyberArk.exists = 64encode 'true'
+            $ToCyberArk.requester = 64encode (magic $secrets.requester)
+            $ToCyberArk.obj = 64encode (magic $secrets.obj)
         }
     }
 }
 
-echo $ToCyberArk 
+$ToCyberArk = ConvertTo-Json @($ToCyberArk)
+echo $ToCyberArk.Substring(3,$ToCyberArk.Length-5)
+
+
 
 <#
 # Original code
