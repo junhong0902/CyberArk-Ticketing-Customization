@@ -222,7 +222,52 @@ namespace CyberArk.Samples
                             validationResult = validationResult.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
                             dynamic respond = JsonConvert.DeserializeObject(validationResult);
                             ticketingOutputUserMessage = de64(respond.exists);
-                            return false;
+                            ticketingOutputUserMessage = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                            //return false;
+
+                            // Date and time format 20201230-235959 : yyyyMMdd-HHmmss
+
+                            // Ticket validity bool parameters
+                            bool chkRequester = (cArkRequester == respond.requester);
+                            bool chkApprover = (cArkRequester != respond.approver);
+                            bool chkObject = (cArkObjectName == respond.obj);
+                            bool chkTime = timecheck(respond.vts, respond.vte);
+                            bool chkExists = (respond.exists == "true");
+
+                            if (chkApprover && chkExists && chkRequester && chkTime && chkObject)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                if (!chkApprover)
+                                {
+                                    ticketingOutputUserMessage = "Access Rejected. Ticker approver same as access requester.";
+                                }
+                                else if (!chkExists)
+                                {
+                                    ticketingOutputUserMessage = "Access Rejected. Ticker not found.";
+                                }
+                                else if (!chkRequester)
+                                {
+                                    ticketingOutputUserMessage = "Access Rejected. Access requester and ticker requester does not match.";
+                                }
+                                else if (!chkTime)
+                                {
+                                    ticketingOutputUserMessage = "Access Rejected. Ticket not started or expired.";
+                                }
+                                else if (!chkObject)
+                                {
+                                    ticketingOutputUserMessage = "Access Rejected. Incorrect password object.";
+                                }
+                                else 
+                                {
+                                    ticketingOutputUserMessage = "Access Rejected. Reason not found.";
+                                }
+
+                                return false;
+                            }
+
                             /*
                             if (validationResult.Trim().ToUpper() == "VALID")
                             {
@@ -234,6 +279,7 @@ namespace CyberArk.Samples
                                 return false;
                             }
                             */
+                            
                         }
                     }
                     
@@ -261,7 +307,7 @@ namespace CyberArk.Samples
                     }
                     */
 
-                    return true;
+                    //return true;
                 }
 
                 //return true;
@@ -351,6 +397,32 @@ namespace CyberArk.Samples
         private string de64(dynamic input)
         {
             return (System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Convert.ToString(input))));
+        }
+
+        private bool timecheck(string timeStart, string timeEnd)
+        {
+            // valid time
+            int yearStart = Int16.Parse(timeStart.Substring(0, 3));
+            int yearEnd = Int16.Parse(timeEnd.Substring(0, 3));
+            int monthStart = Int16.Parse(timeStart.Substring(4, 5));
+            int monthEnd = Int16.Parse(timeEnd.Substring(4, 5));
+            int dayStart = Int16.Parse(timeStart.Substring(6, 7));
+            int dayEnd = Int16.Parse(timeEnd.Substring(6, 7));
+
+            int hourStart = Int16.Parse(timeStart.Substring(9, 10));
+            int hourEnd = Int16.Parse(timeEnd.Substring(9, 10));
+            int minStart = Int16.Parse(timeStart.Substring(11, 12));
+            int minEnd = Int16.Parse(timeEnd.Substring(11, 12));
+            int secStart = Int16.Parse(timeStart.Substring(13, 14));
+            int secEnd = Int16.Parse(timeEnd.Substring(13, 14));
+
+            DateTime start = new DateTime(yearStart, monthStart, dayStart, hourStart, minStart, secStart);
+            DateTime end = new DateTime(yearEnd, monthEnd, dayEnd, hourEnd, minEnd, secEnd);
+
+            DateTime now = DateTime.Now;
+
+
+            return (((now > start) && (now < end)));
         }
 
 
