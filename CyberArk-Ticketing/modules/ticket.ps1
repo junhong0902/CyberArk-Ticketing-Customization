@@ -104,7 +104,7 @@ elseif ($TicketID.Substring(0, [Math]::Min($TicketID.Length, 3)).ToUpper() -eq '
     echo "INVALID"
 }
 
-$ToCyberArk = @{ 'exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = '20210101-000000'; 'vte' = '20211231-235959'}
+$ToCyberArk = @{ 'exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = ''; 'vte' = ''}
 
 switch($strActionName)
 {
@@ -118,6 +118,8 @@ switch($strActionName)
             $ToCyberArk.requester = 64encode (magic $secrets.requester)
             $ToCyberArk.approver = 64encode (magic $secrets.approver)
             $ToCyberArk.obj = 64encode (magic $secrets.obj)
+            $ToCyberArk.vts = 64encode (magic $secrets.validstart)
+            $ToCyberArk.vte = 64encode (magic $secrets.validend)
 
         }else
         {
@@ -138,6 +140,8 @@ switch($strActionName)
             $ToCyberArk.exists = 64encode 'true'
             $ToCyberArk.requester = 64encode (magic $secrets.requester)
             $ToCyberArk.obj = 64encode (magic $secrets.obj)
+            $ToCyberArk.vts = 64encode (magic $secrets.validstart)
+            $ToCyberArk.vte = 64encode (magic $secrets.validend)
         }
     }
 }
