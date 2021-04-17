@@ -221,18 +221,20 @@ namespace CyberArk.Samples
                             using (StreamReader readerTask = processGetTixInfo.StandardOutput) validationResult = readerTask.ReadToEnd();
                             validationResult = validationResult.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
                             dynamic respond = JsonConvert.DeserializeObject(validationResult);
-                            ticketingOutputUserMessage = de64(respond.exists);
-                            ticketingOutputUserMessage = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                            //string vtss = de64(respond.vts);
+                            //ticketingOutputUserMessage = vtss.Trim();
+                            //ticketingOutputUserMessage = DateTime.Now.ToString("yyyyMMdd-HHmmss");
                             //return false;
 
                             // Date and time format 20201230-235959 : yyyyMMdd-HHmmss
 
+
                             // Ticket validity bool parameters
-                            bool chkRequester = (cArkRequester == respond.requester);
-                            bool chkApprover = (cArkRequester != respond.approver);
-                            bool chkObject = (cArkObjectName == respond.obj);
-                            bool chkTime = timecheck(respond.vts, respond.vte);
-                            bool chkExists = (respond.exists == "true");
+                            bool chkRequester = (cArkRequester.Trim().ToLower() == de64(respond.requester));
+                            bool chkApprover = (cArkRequester.Trim().ToLower() != de64(respond.approver));
+                            bool chkObject = (cArkObjectName.Trim().ToLower() == de64(respond.obj));
+                            bool chkTime = true; //timecheck(de64(respond.vts), de64(respond.vte));
+                            bool chkExists = (de64(respond.exists) == "true");
 
                             if (chkApprover && chkExists && chkRequester && chkTime && chkObject)
                             {
@@ -266,8 +268,9 @@ namespace CyberArk.Samples
                                 }
 
                                 return false;
+                            
                             }
-
+                            
                             /*
                             if (validationResult.Trim().ToUpper() == "VALID")
                             {
@@ -396,7 +399,8 @@ namespace CyberArk.Samples
 
         private string de64(dynamic input)
         {
-            return (System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Convert.ToString(input))));
+            string inter = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Convert.ToString(input)));
+            return (inter.Trim().ToLower());
         }
 
         private bool timecheck(string timeStart, string timeEnd)
