@@ -22,3 +22,8 @@ If enable logging in powershell script, powershell's log can be found under same
 
 ### Postgres limitation
 Do note that postgres is case-sensetive, becareful with data entry.
+
+### Read debug log
+```
+Get-Content C:\Windows\Temp\PVWA\PVWA.App.log -wait | Select-String -Pattern "TicketID"
+```
