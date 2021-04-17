@@ -221,8 +221,10 @@ namespace CyberArk.Samples
                             using (StreamReader readerTask = processGetTixInfo.StandardOutput) validationResult = readerTask.ReadToEnd();
                             validationResult = validationResult.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
                             dynamic respond = JsonConvert.DeserializeObject(validationResult);
-                            //string vtss = de64(respond.vts);
-                            //ticketingOutputUserMessage = vtss.Trim();
+                            
+                            //int vtss = int.Parse(((de64(respond.vts)).Substring(13)));
+                            //string tmp = vtss.ToString();
+                            //ticketingOutputUserMessage = tmp;
                             //ticketingOutputUserMessage = DateTime.Now.ToString("yyyyMMdd-HHmmss");
                             //return false;
 
@@ -233,7 +235,7 @@ namespace CyberArk.Samples
                             bool chkRequester = (cArkRequester.Trim().ToLower() == de64(respond.requester));
                             bool chkApprover = (cArkRequester.Trim().ToLower() != de64(respond.approver));
                             bool chkObject = (cArkObjectName.Trim().ToLower() == de64(respond.obj));
-                            bool chkTime = true; //timecheck(de64(respond.vts), de64(respond.vte));
+                            bool chkTime = timecheck(de64(respond.vts), de64(respond.vte));
                             bool chkExists = (de64(respond.exists) == "true");
 
                             if (chkApprover && chkExists && chkRequester && chkTime && chkObject)
@@ -405,21 +407,21 @@ namespace CyberArk.Samples
 
         private bool timecheck(string timeStart, string timeEnd)
         {
+            
             // valid time
-            int yearStart = Int16.Parse(timeStart.Substring(0, 3));
-            int yearEnd = Int16.Parse(timeEnd.Substring(0, 3));
-            int monthStart = Int16.Parse(timeStart.Substring(4, 5));
-            int monthEnd = Int16.Parse(timeEnd.Substring(4, 5));
-            int dayStart = Int16.Parse(timeStart.Substring(6, 7));
-            int dayEnd = Int16.Parse(timeEnd.Substring(6, 7));
-
-            int hourStart = Int16.Parse(timeStart.Substring(9, 10));
-            int hourEnd = Int16.Parse(timeEnd.Substring(9, 10));
-            int minStart = Int16.Parse(timeStart.Substring(11, 12));
-            int minEnd = Int16.Parse(timeEnd.Substring(11, 12));
-            int secStart = Int16.Parse(timeStart.Substring(13, 14));
-            int secEnd = Int16.Parse(timeEnd.Substring(13, 14));
-
+            int yearStart = int.Parse(timeStart.Substring(0, 4));
+            int yearEnd = int.Parse(timeEnd.Substring(0, 4));
+            int monthStart = int.Parse(timeStart.Substring(4, 2));
+            int monthEnd = int.Parse(timeEnd.Substring(4, 2));
+            int dayStart = int.Parse(timeStart.Substring(6, 2));
+            int dayEnd = int.Parse(timeEnd.Substring(6, 2));
+            int hourStart = int.Parse(timeStart.Substring(9, 2));
+            int hourEnd = int.Parse(timeEnd.Substring(9, 2));
+            int minStart = int.Parse(timeStart.Substring(11, 2));
+            int minEnd = int.Parse(timeEnd.Substring(11, 2));
+            int secStart = int.Parse(timeStart.Substring(13));
+            int secEnd = int.Parse(timeEnd.Substring(13));
+            
             DateTime start = new DateTime(yearStart, monthStart, dayStart, hourStart, minStart, secStart);
             DateTime end = new DateTime(yearEnd, monthEnd, dayEnd, hourEnd, minEnd, secEnd);
 
