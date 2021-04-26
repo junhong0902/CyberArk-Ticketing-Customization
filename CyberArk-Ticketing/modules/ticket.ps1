@@ -33,15 +33,17 @@ function magic
 # Trim & convert input from base64 to UTF8
 try
 {
-    $TicketID = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[0]))
-    $APIURL = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[1]))
-    $cArkRequester = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[2]))
-    $obj = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[3]))
+    
+    $APIURL = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[0]))
+    $LogonUsername = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[1]))
+    $LogonSecret = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[2]))
+    $TicketID = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[3]))
 
-    $TicketID = magic $TicketID
+    
     $APIURL = magic $APIURL
-    $cArkRequester = magic $cArkRequester
-    $obj = magic $obj
+    $TicketID = magic $TicketID
+    $LogonUsername = magic $LogonUsername
+    $LogonSecret = magic $LogonSecret
 }
 catch
 {
@@ -104,28 +106,39 @@ elseif ($TicketID.Substring(0, [Math]::Min($TicketID.Length, 3)).ToUpper() -eq '
     echo "INVALID"
 }
 
-$ToCyberArk = @{ 'exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = ''; 'vte' = ''}
+$ToCyberArk = @{ 'exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = ''; 'vte' = ''; 'errormsg' = '' }
 
 switch($strActionName)
 {
     'CHG'
     {    
-        $secrets = (Invoke-RestMethod -Method Get -Uri "$restURL" -ContentType application/json)
-        if (((magic $obj) -eq (magic $secrets.obj)) -and ((magic $secrets.approver) -ne (magic $cArkRequester)) -and ((magic $TicketID) -eq (magic $secrets.ticketid)) -and ((magic $cArkRequester) -eq (magic $secrets.requester)))
+        try
         {
-	        #echo "VALID"
-            $ToCyberArk.Exists = 64encode 'true'
-            $ToCyberArk.requester = 64encode (magic $secrets.requester)
-            $ToCyberArk.approver = 64encode (magic $secrets.approver)
-            $ToCyberArk.obj = 64encode (magic $secrets.obj)
-            $ToCyberArk.vts = 64encode (magic $secrets.validstart)
-            $ToCyberArk.vte = 64encode (magic $secrets.validend)
+            $logonreturn = (Invoke-WebRequest -Uri "$restURL" -ContentType application/json)
 
-        }else
-        {
-	        #echo "INVALID"
-            $ToCyberArk.exists = 'true'
+            
+            $secrets = (Invoke-RestMethod -Method Get -Uri "$restURL" -ContentType application/json)
+
+            if ($secrets.get_length() -eq 0)
+            {
+                $ToCyberArk.exists = 64encode 'false'
+            }
+            else
+            {
+                $ToCyberArk.exists = 64encode 'true'
+                $ToCyberArk.requester = 64encode (magic $secrets.requester)
+                $ToCyberArk.approver = 64encode (magic $secrets.approver)
+                $ToCyberArk.obj = 64encode (magic $secrets.obj)
+                $ToCyberArk.vts = 64encode (magic $secrets.validstart)
+                $ToCyberArk.vte = 64encode (magic $secrets.validend)
+            }
         }
+        catch
+        {
+            $ToCyberArk.errormsg = 64encode 'Cannot connect to Ticketing System.'
+        }
+
+
     }
     'INC'
     {

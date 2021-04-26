@@ -36,7 +36,8 @@ namespace CyberArk.Samples
         public string paramAPIName = string.Empty;
         public string paramBypassID = string.Empty;
         public string paramAPIURL = string.Empty;
-
+        public string ticketingSystemUsername = string.Empty;
+        public string ticketingSystemSecret = string.Empty;
         //set Info from CyberArk
         public string cArkRequester = string.Empty;
         public string cArkPolicyID = string.Empty;
@@ -71,7 +72,6 @@ namespace CyberArk.Samples
         
         public bool ValidateTicket(IValidationParametersEx parameters, out ITicketOutput ticketingOutput)
         {
-            bool rc;
             bool bValid = false; // Validation result (the return value) - will contain true if validate succeed, false otherwise
             ticketingOutput = new TicketOutput();
 
@@ -90,6 +90,8 @@ namespace CyberArk.Samples
             cArkSafeName = parameters.SafeName;
             cArklogonID = parameters.TicketingConnectionAccount.UserName;
             cArklogonPassword = parameters.TicketingConnectionAccount.Password;
+            ticketingSystemUsername = parameters.TicketingConnectionAccount.UserName;
+            ticketingSystemSecret = parameters.TicketingConnectionAccount.Password;
 
             /****************************************************************************************
              * Writing to the debug log - below is a sample showing how to access the debug log object and 
@@ -114,11 +116,7 @@ namespace CyberArk.Samples
             //Logon to the ticketing system:
             if (connectionAccount != null)
             {
-                string ticketingSystemAddress = parameters.TicketingConnectionAccount.Address;
-                string ticketingSystemUsername = parameters.TicketingConnectionAccount.UserName;
-                string ticketingSystemPassword = parameters.TicketingConnectionAccount.Password;
-
-                rc = LogonToTicketingSystem(ticketingSystemAddress, ticketingSystemUsername, ticketingSystemPassword);
+                //rc = LogonToTicketingSystem(ticketingSystemAddress, ticketingSystemUsername, ticketingSystemSecret);
                 //TODO: Decide what to do if ticketing system is unavailable. You can still return a success code and include this information in ticketingOutput.TicketAuditOutput
                 //ticketingOutput.UserMessage = OutputLog(parameters.TicketId);
 
@@ -211,84 +209,88 @@ namespace CyberArk.Samples
                     validation.FileName = @"C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe";
                     validation.UseShellExecute = false;
                     validation.RedirectStandardOutput = true;
-                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + en64(ticketID) + " " + en64(paramAPIURL) + " " + en64(cArkRequester) + " " + en64(cArkObjectName);
-                    //Process.Start(validation);
+                    //validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + en64(ticketID) + " " + en64(paramAPIURL) + " " + en64(cArkRequester) + " " + en64(cArkObjectName);
+                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + en64(paramAPIURL) + " " + en64(ticketingSystemUsername) + " " + en64(ticketingSystemSecret) + " " + en64(ticketID);
 
+                    using (Process processGetTixInfo = Process.Start(validation))
                     {
-                        using (Process processGetTixInfo = Process.Start(validation))
+                        string validationResult = string.Empty;
+                        using (StreamReader readerTask = processGetTixInfo.StandardOutput) validationResult = readerTask.ReadToEnd();
+                        validationResult = validationResult.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
+                        dynamic respond = JsonConvert.DeserializeObject(validationResult);
+
+                        //int vtss = int.Parse(((de64(respond.vts)).Substring(13)));
+                        //string tmp = vtss.ToString();
+                        //ticketingOutputUserMessage = tmp;
+                        //ticketingOutputUserMessage = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                        //return false;
+
+                        // Date and time format 20201230-235959 : yyyyMMdd-HHmmss
+
+                        string errormsg = de64(respond.errormsg);
+                        // Ticket validity bool parameters
+                        bool chkRequester = (cArkRequester.Trim().ToLower() == de64(respond.requester));
+                        bool chkApprover = (cArkRequester.Trim().ToLower() != de64(respond.approver));
+                        bool chkObject = (cArkObjectName.Trim().ToLower() == de64(respond.obj));
+                        bool chkTime = timecheck(de64(respond.vts), de64(respond.vte));
+                        bool chkExists = (de64(respond.exists) == "true");
+                        
+
+                        if (chkApprover && chkExists && chkRequester && chkTime && chkObject && (errormsg.Length == 0))
                         {
-                            string validationResult = string.Empty;
-                            using (StreamReader readerTask = processGetTixInfo.StandardOutput) validationResult = readerTask.ReadToEnd();
-                            validationResult = validationResult.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
-                            dynamic respond = JsonConvert.DeserializeObject(validationResult);
-                            
-                            //int vtss = int.Parse(((de64(respond.vts)).Substring(13)));
-                            //string tmp = vtss.ToString();
-                            //ticketingOutputUserMessage = tmp;
-                            //ticketingOutputUserMessage = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-                            //return false;
-
-                            // Date and time format 20201230-235959 : yyyyMMdd-HHmmss
-
-
-                            // Ticket validity bool parameters
-                            bool chkRequester = (cArkRequester.Trim().ToLower() == de64(respond.requester));
-                            bool chkApprover = (cArkRequester.Trim().ToLower() != de64(respond.approver));
-                            bool chkObject = (cArkObjectName.Trim().ToLower() == de64(respond.obj));
-                            bool chkTime = timecheck(de64(respond.vts), de64(respond.vte));
-                            bool chkExists = (de64(respond.exists) == "true");
-
-                            if (chkApprover && chkExists && chkRequester && chkTime && chkObject)
+                            return true;
+                        }
+                        else
+                        {
+                            if (errormsg.Length > 0)
                             {
-                                return true;
+                                ticketingOutputUserMessage = errormsg.ToUpper();
+                            }
+                            else if (!chkApprover)
+                            {
+                                ticketingOutputUserMessage = "Access Rejected. Ticket approver same as access requester.";
+                            }
+                            else if (!chkExists)
+                            {
+                                ticketingOutputUserMessage = "Access Rejected. Ticket not found.";
+                            }
+                            else if (!chkRequester)
+                            {
+                                ticketingOutputUserMessage = "Access Rejected. Access requester and ticker requester does not match.";
+                            }
+                            else if (!chkTime)
+                            {
+                                ticketingOutputUserMessage = "Access Rejected. Ticket not started or expired.";
+                            }
+                            else if (!chkObject)
+                            {
+                                ticketingOutputUserMessage = "Access Rejected. Incorrect password object.";
                             }
                             else
                             {
-                                if (!chkApprover)
-                                {
-                                    ticketingOutputUserMessage = "Access Rejected. Ticker approver same as access requester.";
-                                }
-                                else if (!chkExists)
-                                {
-                                    ticketingOutputUserMessage = "Access Rejected. Ticker not found.";
-                                }
-                                else if (!chkRequester)
-                                {
-                                    ticketingOutputUserMessage = "Access Rejected. Access requester and ticker requester does not match.";
-                                }
-                                else if (!chkTime)
-                                {
-                                    ticketingOutputUserMessage = "Access Rejected. Ticket not started or expired.";
-                                }
-                                else if (!chkObject)
-                                {
-                                    ticketingOutputUserMessage = "Access Rejected. Incorrect password object.";
-                                }
-                                else 
-                                {
-                                    ticketingOutputUserMessage = "Access Rejected. Reason not found.";
-                                }
+                                ticketingOutputUserMessage = "Access Rejected. Reason not found.";
+                            }
 
-                                return false;
-                            
-                            }
-                            
-                            /*
-                            if (validationResult.Trim().ToUpper() == "VALID")
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                ticketingOutputUserMessage = msgInvalidTicket;
-                                return false;
-                            }
-                            */
+                            return false;
                             
                         }
+                            
+                        /*
+                        if (validationResult.Trim().ToUpper() == "VALID")
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            ticketingOutputUserMessage = msgInvalidTicket;
+                            return false;
+                        }
+                        */
+                            
                     }
-                    
 
+
+                    
                     /** If want to call restapi directly from dll
                      * 
                      
@@ -353,30 +355,6 @@ namespace CyberArk.Samples
             }
         }
 
-        private string OutputLog(string Log)
-        {
-            //starts to get ticket info based on api return results
-            ProcessStartInfo GenLog = new ProcessStartInfo();
-            GenLog.FileName = @"C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe";
-            GenLog.UseShellExecute = false;
-            GenLog.RedirectStandardOutput = true;
-            GenLog.Arguments = Path.Combine(ModuleDirectory,"ticket.ps1") + " '" + Log + "'";
-            Process.Start(GenLog);
-
-            {
-                using (Process processGetTixInfo = Process.Start(GenLog))
-                {
-                    string LogResult = string.Empty;
-                    using (StreamReader readerTask = processGetTixInfo.StandardOutput) LogResult = readerTask.ReadLine();
-                    //hash will contain a fixed 40 characters
-                    //hashResult = hashResult.Substring(0, 40);
-                    return LogResult;
-                }
-            }
-            
-            
-        }
-
         bool validateHash(string apiHash, string pAPIHash)
         {
             if (apiHash.Trim().ToUpper() == pAPIHash.Trim().ToUpper())
@@ -407,28 +385,33 @@ namespace CyberArk.Samples
 
         private bool timecheck(string timeStart, string timeEnd)
         {
-            
-            // valid time
-            int yearStart = int.Parse(timeStart.Substring(0, 4));
-            int yearEnd = int.Parse(timeEnd.Substring(0, 4));
-            int monthStart = int.Parse(timeStart.Substring(4, 2));
-            int monthEnd = int.Parse(timeEnd.Substring(4, 2));
-            int dayStart = int.Parse(timeStart.Substring(6, 2));
-            int dayEnd = int.Parse(timeEnd.Substring(6, 2));
-            int hourStart = int.Parse(timeStart.Substring(9, 2));
-            int hourEnd = int.Parse(timeEnd.Substring(9, 2));
-            int minStart = int.Parse(timeStart.Substring(11, 2));
-            int minEnd = int.Parse(timeEnd.Substring(11, 2));
-            int secStart = int.Parse(timeStart.Substring(13));
-            int secEnd = int.Parse(timeEnd.Substring(13));
-            
-            DateTime start = new DateTime(yearStart, monthStart, dayStart, hourStart, minStart, secStart);
-            DateTime end = new DateTime(yearEnd, monthEnd, dayEnd, hourEnd, minEnd, secEnd);
+            if (timeStart.Length <= 0 || timeEnd.Length <= 0)
+            {
+                return false;
+            }
+            else
+            {
+                int yearStart = int.Parse(timeStart.Substring(0, 4));
+                int yearEnd = int.Parse(timeEnd.Substring(0, 4));
+                int monthStart = int.Parse(timeStart.Substring(4, 2));
+                int monthEnd = int.Parse(timeEnd.Substring(4, 2));
+                int dayStart = int.Parse(timeStart.Substring(6, 2));
+                int dayEnd = int.Parse(timeEnd.Substring(6, 2));
+                int hourStart = int.Parse(timeStart.Substring(9, 2));
+                int hourEnd = int.Parse(timeEnd.Substring(9, 2));
+                int minStart = int.Parse(timeStart.Substring(11, 2));
+                int minEnd = int.Parse(timeEnd.Substring(11, 2));
+                int secStart = int.Parse(timeStart.Substring(13));
+                int secEnd = int.Parse(timeEnd.Substring(13));
 
-            DateTime now = DateTime.Now;
+                DateTime start = new DateTime(yearStart, monthStart, dayStart, hourStart, minStart, secStart);
+                DateTime end = new DateTime(yearEnd, monthEnd, dayEnd, hourEnd, minEnd, secEnd);
+
+                DateTime now = DateTime.Now;
 
 
-            return (((now > start) && (now < end)));
+                return (((now > start) && (now < end)));
+            }
         }
 
 
