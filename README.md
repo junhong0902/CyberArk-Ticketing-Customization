@@ -3,6 +3,10 @@
 Project file: CyberArk-Ticketing.sln 
 Main code: CyberArk-Ticketing/Main.cs
 PS script location: CyberArk-Ticketing/modules/ticket.ps1
+Simulated Ticketing System: 
+  For NSSG user: Create a EC2 instance with private AMI "CyberArk Ticketing AMI"
+  Ticekting API URL: http://<public ip of EC2 instance>
+                     ex: http://localhost:3000/change?ticketid=eq.chg001 (Query ticket with ticketID equals to chg001)
 ```
 
 ### To Do if want to recreate dll
