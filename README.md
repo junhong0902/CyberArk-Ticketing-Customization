@@ -1,6 +1,10 @@
 # CyberArk-TicketingPlugin
  
-Main code: Main.cs
+Project file: CyberArk-Ticketing.sln 
+Main code: CyberArk-Ticketing/Main.cs
+PS script location: CyberArk-Ticketing/modules/ticket.ps1
+
+
 ### To Do if want to recreate dll
 
 In visual studio install Newtonsoft.Json to parse Json (Project -> manage nuget)
