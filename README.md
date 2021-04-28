@@ -1,6 +1,15 @@
 # CyberArk-TicketingPlugin
- 
-Main code: Main.cs
+```
+Project file: CyberArk-Ticketing.sln 
+Main code: CyberArk-Ticketing/Main.cs
+PS script location: CyberArk-Ticketing/modules/ticket.ps1
+Simulated Ticketing System (For credentials please check AMI's description): 
+  For NSSG user: Create a EC2 instance with private AMI "CyberArk Ticketing AMI"
+  Ticketing API URL: http://<public ip of EC2 instance>
+                     ex: http://<public ip of EC2 instance>/change?ticketid=eq.chg001 (Query ticket in "change" database with ticketID equals to chg001)
+  To access ticketing database: http://<public ip of EC2 instance>:8080
+```
+
 ### To Do if want to recreate dll
 
 In visual studio install Newtonsoft.Json to parse Json (Project -> manage nuget)
