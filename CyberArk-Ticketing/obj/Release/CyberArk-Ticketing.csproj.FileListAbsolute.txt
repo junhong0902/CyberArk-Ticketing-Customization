@@ -1,0 +1,10 @@
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Release\CyberArk-Ticketing.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Release\CyberArk-Ticketing.pdb
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Release\CyberArk.PasswordVault.PublicInterfaces.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Release\Newtonsoft.Json.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\bin\Release\Newtonsoft.Json.xml
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Release\CyberArk-Ticketing.csprojAssemblyReference.cache
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Release\CyberArk-Ticketing.csproj.CoreCompileInputs.cache
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Release\CyberArk-Ticketing.csproj.CopyComplete
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Release\CyberArk-Ticketing.dll
+C:\Users\junhong.choo\Documents\GitHub\CyberArk-Ticketing\CyberArk-Ticketing\CyberArk-Ticketing\obj\Release\CyberArk-Ticketing.pdb

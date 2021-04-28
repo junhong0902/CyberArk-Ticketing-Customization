@@ -69,7 +69,7 @@ namespace CyberArk.Samples
         /// <returns>This method must return ‘true’ if the ticket validation succeeds or ‘false’ if it fails.
         /// In case of success, the user will be able to access the requested password.</returns>
 
-        
+
         public bool ValidateTicket(IValidationParametersEx parameters, out ITicketOutput ticketingOutput)
         {
             bool bValid = false; // Validation result (the return value) - will contain true if validate succeed, false otherwise
@@ -93,13 +93,7 @@ namespace CyberArk.Samples
             ticketingSystemUsername = parameters.TicketingConnectionAccount.UserName;
             ticketingSystemSecret = parameters.TicketingConnectionAccount.Password;
 
-            /****************************************************************************************
-             * Writing to the debug log - below is a sample showing how to access the debug log object and 
-             * use it to write log records. Any information written to the debug log will show up in the application's log file
-             * 
-             */
-            IDebugLog log = (IDebugLog)parameters;
-            log.LogWrite("This is a log message from the ticketing system validator module.");
+
 
             /****************************************************************************************
              * First scenario
@@ -139,14 +133,17 @@ namespace CyberArk.Samples
             {
                 //TODO: Replace with an appropriate denial/error message
                 ticketingOutput.UserMessage = ticketingOutputUserMessage;
+                auditLog = auditLog + " " + "TicketID validation failed.";
+                ticketingOutput.TicketAuditOutput = string.Format("{0},{1}", returnedTicketId, auditLog);
             }
             else
             {
                 ticketingOutput.TicketId = returnedTicketId; // Return the validated ticket ID
+                auditLog = auditLog + " " + "TicketID validated successfully.";
                 ticketingOutput.TicketAuditOutput = string.Format("{0},{1}", returnedTicketId, auditLog); // Specify any additional information you'd like written to the audit log
-                ticketingOutput.UserMessage = ticketingOutputUserMessage;
+                //ticketingOutput.UserMessage = ticketingOutputUserMessage;
             }
-
+            
             return bValid;
 
 
@@ -170,6 +167,7 @@ namespace CyberArk.Samples
             return bValid;
             */
 
+
         }
 
         //TODO: Implement the following functions:
@@ -181,13 +179,13 @@ namespace CyberArk.Samples
 
         private bool CheckTicketIdValidity(string ticketID, string[] internalParameters)
         {
-            try 
+            try
             {
                 //Validate if the current APP matches the HASH in PVWA parameters
-                
-                string ScriptHash = getHash(paramAPIName, paramHashApp);
 
-                if (!(validateHash(ScriptHash, paramAPIHash)))
+                string ScriptHash = GetHash(paramAPIName, paramHashApp);
+
+                if (!(ValidateHash(ScriptHash, paramAPIHash)))
                 {
                     ticketingOutputUserMessage = msgInvalidHash;
                     return false;
@@ -199,18 +197,18 @@ namespace CyberArk.Samples
                     auditLog = auditLog + " " + "TicketID matches the BypassID.";
                     return true;
                 }
-                else 
+                else
                 {
                     // Here is the validation process. 
 
                     // If want to invoke powershell script
-                     
+
                     ProcessStartInfo validation = new ProcessStartInfo();
                     validation.FileName = @"C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe";
                     validation.UseShellExecute = false;
                     validation.RedirectStandardOutput = true;
                     //validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + en64(ticketID) + " " + en64(paramAPIURL) + " " + en64(cArkRequester) + " " + en64(cArkObjectName);
-                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + en64(paramAPIURL) + " " + en64(ticketingSystemUsername) + " " + en64(ticketingSystemSecret) + " " + en64(ticketID);
+                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + En64(paramAPIURL) + " " + En64(ticketingSystemUsername) + " " + En64(ticketingSystemSecret) + " " + En64(ticketID);
 
                     using (Process processGetTixInfo = Process.Start(validation))
                     {
@@ -227,14 +225,14 @@ namespace CyberArk.Samples
 
                         // Date and time format 20201230-235959 : yyyyMMdd-HHmmss
 
-                        string errormsg = de64(respond.errormsg);
+                        string errormsg = De64(respond.errormsg);
                         // Ticket validity bool parameters
-                        bool chkRequester = (cArkRequester.Trim().ToLower() == de64(respond.requester));
-                        bool chkApprover = (cArkRequester.Trim().ToLower() != de64(respond.approver));
-                        bool chkObject = (cArkObjectName.Trim().ToLower() == de64(respond.obj));
-                        bool chkTime = timecheck(de64(respond.vts), de64(respond.vte));
-                        bool chkExists = (de64(respond.exists) == "true");
-                        
+                        bool chkRequester = (cArkRequester.Trim().ToLower() == De64(respond.requester));
+                        bool chkApprover = (cArkRequester.Trim().ToLower() != De64(respond.approver));
+                        bool chkObject = (cArkObjectName.Trim().ToLower() == De64(respond.obj));
+                        bool chkTime = Timecheck(De64(respond.vts), De64(respond.vte));
+                        bool chkExists = (De64(respond.exists) == "true");
+
 
                         if (chkApprover && chkExists && chkRequester && chkTime && chkObject && (errormsg.Length == 0))
                         {
@@ -272,9 +270,9 @@ namespace CyberArk.Samples
                             }
 
                             return false;
-                            
+
                         }
-                            
+
                         /*
                         if (validationResult.Trim().ToUpper() == "VALID")
                         {
@@ -286,11 +284,11 @@ namespace CyberArk.Samples
                             return false;
                         }
                         */
-                            
+
                     }
 
 
-                    
+
                     /** If want to call restapi directly from dll
                      * 
                      
@@ -335,14 +333,14 @@ namespace CyberArk.Samples
         //#####################################################################################
         //common methods and functions
         //#####################################################################################
-        string getHash(string Item, string HashApp)
+        string GetHash(string Item, string HashApp)
         {
             //starts to get ticket info based on api return results
             ProcessStartInfo startGetHash = new ProcessStartInfo();
             startGetHash.FileName = Path.Combine(ModuleDirectory, HashApp);
             startGetHash.UseShellExecute = false;
             startGetHash.RedirectStandardOutput = true;
-            startGetHash.Arguments = "gethash /filepath " + Path.Combine(ModuleDirectory,Item);
+            startGetHash.Arguments = "gethash /filepath " + Path.Combine(ModuleDirectory, Item);
             {
                 using (Process processGetTixInfo = Process.Start(startGetHash))
                 {
@@ -355,14 +353,14 @@ namespace CyberArk.Samples
             }
         }
 
-        bool validateHash(string apiHash, string pAPIHash)
+        bool ValidateHash(string apiHash, string pAPIHash)
         {
             if (apiHash.Trim().ToUpper() == pAPIHash.Trim().ToUpper())
             {
                 return true;
             }
-            else if(pAPIHash.Trim().ToUpper() == "NULL")
-            {                
+            else if (pAPIHash.Trim().ToUpper() == "NULL")
+            {
                 return true;
             }
             else
@@ -372,18 +370,18 @@ namespace CyberArk.Samples
         }
 
         // base64 encode
-        private string en64(string input)
+        private string En64(string input)
         {
             return (System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(input)));
         }
 
-        private string de64(dynamic input)
+        private string De64(dynamic input)
         {
             string inter = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Convert.ToString(input)));
             return (inter.Trim().ToLower());
         }
 
-        private bool timecheck(string timeStart, string timeEnd)
+        private bool Timecheck(string timeStart, string timeEnd)
         {
             if (timeStart.Length <= 0 || timeEnd.Length <= 0)
             {
