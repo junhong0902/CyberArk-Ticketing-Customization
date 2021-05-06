@@ -38,6 +38,8 @@ namespace CyberArk.Samples
         public string paramAPIURL = string.Empty;
         public string ticketingSystemUsername = string.Empty;
         public string ticketingSystemSecret = string.Empty;
+        public int INCduration = 24;
+
         //set Info from CyberArk
         public string cArkRequester = string.Empty;
         public string cArkPolicyID = string.Empty;
@@ -208,7 +210,7 @@ namespace CyberArk.Samples
                     validation.UseShellExecute = false;
                     validation.RedirectStandardOutput = true;
                     //validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + en64(ticketID) + " " + en64(paramAPIURL) + " " + en64(cArkRequester) + " " + en64(cArkObjectName);
-                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + En64(paramAPIURL) + " " + En64(ticketingSystemUsername) + " " + En64(ticketingSystemSecret) + " " + En64(ticketID);
+                    validation.Arguments = Path.Combine(ModuleDirectory, "ticket.ps1") + " " + En64(paramAPIURL) + " " + En64(ticketingSystemUsername) + " " + En64(ticketingSystemSecret) + " " + En64(ticketID) + " " + En64(cArkRequester) + " " + En64(cArkObjectName) + " " + En64(DateTime.Now.ToString("yyyyMMdd-HHmmss")) + " " + En64((DateTime.Now.AddHours(INCduration)).ToString("yyyyMMdd-HHmmss"));
 
                     using (Process processGetTixInfo = Process.Start(validation))
                     {
@@ -445,6 +447,8 @@ namespace CyberArk.Samples
             paramBypassID = match9.Groups[1].Value;
             Match match10 = Regex.Match(checkParameters, "APIURL\" Value=\"(.*?)\"");
             paramAPIURL = match10.Groups[1].Value;
+            Match match11 = Regex.Match(checkParameters, "INCduration\" Value=\"(.*?)\"");
+            INCduration = int.Parse(match11.Groups[1].Value);
 
             //not using parametersArray
             paramtersArray = null;
