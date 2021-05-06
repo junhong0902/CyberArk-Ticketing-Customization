@@ -38,12 +38,20 @@ try
     $LogonUsername = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[1]))
     $LogonSecret = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[2]))
     $TicketID = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[3]))
+    $cArkRequester = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[4]))
+    $obj = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[5]))
+    $INCstart = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[6]))
+    $INCend = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($args[7]))
 
     
     $APIURL = magic $APIURL
     $TicketID = magic $TicketID
     $LogonUsername = magic $LogonUsername
     $LogonSecret = magic $LogonSecret
+    $cArkRequester = magic $cArkRequester
+    $obj = magic $obj
+    $INCstart = magic $INCstart
+    $INCend = magic $INCend
 }
 catch
 {
@@ -72,7 +80,6 @@ if ($APIURL.Substring(0, [Math]::Min($APIURL.Length, 3)).ToUpper() -ne 'HTT')
 	$APIURL = "https://" + $APIURL
 }
 
-
 ### Check if it is incident or change request
 if ($TicketID.Substring(0, [Math]::Min($TicketID.Length, 3)).ToUpper() -eq 'CHG')
 {
@@ -80,11 +87,11 @@ if ($TicketID.Substring(0, [Math]::Min($TicketID.Length, 3)).ToUpper() -eq 'CHG'
 
     if ($APIURL.Substring($APIURL.get_Length()-1) -ne '/')
     {
-        $restURL = $APIURL + "/change?ticketid=eq." + $TicketID.tolower()
+        $restURL = $APIURL + "/change?ticketid=eq." + ($TicketID.substring(3)).tolower()
     }
     else
     {
-        $restURL = $APIURL + "change?ticketid=eq." + $TicketID.tolower()
+        $restURL = $APIURL + "change?ticketid=eq." + ($TicketID.substring(3)).tolower()
     }
 	
     #write-host $restURL
@@ -106,16 +113,62 @@ elseif ($TicketID.Substring(0, [Math]::Min($TicketID.Length, 3)).ToUpper() -eq '
     echo "INVALID"
 }
 
-$ToCyberArk = @{ 'exists' =  'true'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = ''; 'vte' = ''; 'errormsg' = '' }
+$ToCyberArk = @{ 'exists' =  'false'; 'requester' = '' ; 'approver' = ''; 'obj' = ''; 'vts' = ''; 'vte' = ''; 'errormsg' = '' }
 
 switch($strActionName)
 {
     'CHG'
     {    
+        $connection = 0
+        
         try
         {
-            $logonreturn = (Invoke-WebRequest -Uri "$restURL" -ContentType application/json)
+            $logonreturn = (Invoke-WebRequest -Uri "$APIURL" -ContentType application/json)
+            #write-host $restURL
+            $connection = 1
+        }
+        catch
+        {
+            $ToCyberArk.errormsg = 64encode 'Cannot connect to Ticketing System.'
+        }
 
+        if ($connection)
+        {
+
+            $secrets = (Invoke-RestMethod -Method Get -Uri "$restURL" -ContentType application/json)
+            #write-host $restURL
+            if ($secrets.get_length() -eq 0)
+            {
+                $ToCyberArk.exists = 64encode 'false'
+            }
+            else
+            {
+                $ToCyberArk.exists = 64encode 'true'
+                $ToCyberArk.requester = 64encode (magic $secrets.requester)
+                $ToCyberArk.approver = 64encode (magic $secrets.approver)
+                $ToCyberArk.obj = 64encode (magic $secrets.obj)
+                $ToCyberArk.vts = 64encode (magic $secrets.validstart)
+                $ToCyberArk.vte = 64encode (magic $secrets.validend)
+            }
+        }
+    }
+    'INC'
+    {
+        $connection = 0
+
+        try
+        {
+            $logonreturn = (Invoke-WebRequest -Uri "$APIURL" -ContentType application/json)
+            $connection = 1
+        }
+        catch
+        {
+            $ToCyberArk.errormsg = 64encode 'Cannot connect to Ticketing System.'
+        }
+
+
+        if ($connection)
+        {
             
             $secrets = (Invoke-RestMethod -Method Get -Uri "$restURL" -ContentType application/json)
 
@@ -133,29 +186,7 @@ switch($strActionName)
                 $ToCyberArk.vte = 64encode (magic $secrets.validend)
             }
         }
-        catch
-        {
-            $ToCyberArk.errormsg = 64encode 'Cannot connect to Ticketing System.'
-        }
 
-
-    }
-    'INC'
-    {
-        $restURLget =  $restURL + "?ticketid=eq." + $TicketID.tolower()
-        $secrets = (Invoke-RestMethod -Method Get -Uri "$restURLget" -ContentType application/json)
-        if ($secrets.get_length() -eq 0)
-        {
-            $ToCyberArk.exists = 'false'
-        }
-        else
-        {
-            $ToCyberArk.exists = 64encode 'true'
-            $ToCyberArk.requester = 64encode (magic $secrets.requester)
-            $ToCyberArk.obj = 64encode (magic $secrets.obj)
-            $ToCyberArk.vts = 64encode (magic $secrets.validstart)
-            $ToCyberArk.vte = 64encode (magic $secrets.validend)
-        }
     }
 }
 
