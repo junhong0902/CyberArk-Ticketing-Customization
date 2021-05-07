@@ -57,6 +57,12 @@ namespace CyberArk.Samples
         //set audit log
         public string auditLog = string.Empty;
 
+        //set check condition bool
+        public bool enChkApprover = true;
+        public bool enChkTime = true;
+        public bool enChkRequester = true;
+        public bool enChkObj = true;
+
         #endregion
 
         /// <summary>
@@ -228,25 +234,27 @@ namespace CyberArk.Samples
                         // Date and time format 20201230-235959 : yyyyMMdd-HHmmss
 
                         string errormsg = De64(respond.errormsg);
+
+                        if (errormsg.Length > 0)
+                        {
+                            ticketingOutputUserMessage = errormsg.ToUpper();
+                            return false;
+                        }
+
                         // Ticket validity bool parameters
-                        bool chkRequester = (cArkRequester.Trim().ToLower() == De64(respond.requester));
-                        bool chkApprover = (cArkRequester.Trim().ToLower() != De64(respond.approver));
-                        bool chkObject = (cArkObjectName.Trim().ToLower() == De64(respond.obj));
-                        bool chkTime = Timecheck(De64(respond.vts), De64(respond.vte));
+                        bool chkRequester = (!enChkRequester || (cArkRequester.Trim().ToLower() == De64(respond.requester)));
+                        bool chkApprover = (!enChkApprover || (cArkRequester.Trim().ToLower() != De64(respond.approver)));
+                        bool chkObject = (!enChkObj || (cArkObjectName.Trim().ToLower() == De64(respond.obj)));
+                        bool chkTime = (!enChkTime || Timecheck(De64(respond.vts), De64(respond.vte)));
                         bool chkExists = (De64(respond.exists) == "true");
 
-
-                        if (chkApprover && chkExists && chkRequester && chkTime && chkObject && (errormsg.Length == 0))
+                        if (chkApprover && chkExists && chkRequester && chkTime && chkObject)
                         {
                             return true;
                         }
                         else
                         {
-                            if (errormsg.Length > 0)
-                            {
-                                ticketingOutputUserMessage = errormsg.ToUpper();
-                            }
-                            else if (!chkApprover)
+                            if (!chkApprover)
                             {
                                 ticketingOutputUserMessage = "Access Rejected. Ticket approver same as access requester.";
                             }
@@ -447,9 +455,46 @@ namespace CyberArk.Samples
             paramBypassID = match9.Groups[1].Value;
             Match match10 = Regex.Match(checkParameters, "APIURL\" Value=\"(.*?)\"");
             paramAPIURL = match10.Groups[1].Value;
-            Match match11 = Regex.Match(checkParameters, "INCduration\" Value=\"(.*?)\"");
-            INCduration = int.Parse(match11.Groups[1].Value);
 
+
+            Match match11 = Regex.Match(checkParameters, "INCduration\" Value=\"(.*?)\"");
+            int.TryParse(match11.Groups[1].Value, out INCduration);
+            
+            Match match12 = Regex.Match(checkParameters, "CheckTime\" Value=\"(.*?)\"");
+            if (match12.Groups[1].Value.Length > 0)
+            {
+                if (match12.Groups[1].Value.Trim().ToLower().Equals("true"))
+                { enChkTime = true; }
+                else if (match12.Groups[1].Value.Trim().ToLower().Equals("false"))
+                { enChkTime = false; }
+            }
+
+            Match match13 = Regex.Match(checkParameters, "CheckApprover\" Value=\"(.*?)\"");
+            if (match13.Groups[1].Value.Length > 0)
+            {
+                if (match13.Groups[1].Value.Trim().ToLower().Equals("true"))
+                { enChkApprover = true; }
+                else if (match13.Groups[1].Value.Trim().ToLower().Equals("false"))
+                { enChkApprover = false; }
+            }
+
+            Match match14 = Regex.Match(checkParameters, "CheckObj\" Value=\"(.*?)\"");
+            if (match14.Groups[1].Value.Length > 0)
+            {
+                if (match14.Groups[1].Value.Trim().ToLower().Equals("true"))
+                { enChkObj = true; }
+                else if (match14.Groups[1].Value.Trim().ToLower().Equals("false"))
+                { enChkObj = false; }
+            }
+            Match match15 = Regex.Match(checkParameters, "CheckRequester\" Value=\"(.*?)\"");
+            if (match15.Groups[1].Value.Length > 0)
+            {
+                if (match15.Groups[1].Value.Trim().ToLower().Equals("true"))
+                { enChkRequester = true; }
+                else if (match15.Groups[1].Value.Trim().ToLower().Equals("false"))
+                { enChkRequester = false; }
+            }
+            
             //not using parametersArray
             paramtersArray = null;
         }
