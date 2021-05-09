@@ -31,3 +31,16 @@ If enable logging in powershell script, powershell's log can be found under same
 
 ### Postgres limitation
 Do note that postgres is case-sensetive, becareful with data entry.
+
+### PVWA Parameters (CASE-SENSITIVE!)
+	1. APIHash - 'NULL' or HASHVALUE - Mandatory
+	2. HashApp - 'AIMGetAppInfo.exe' - Mandatory if APIHASH != NULL, the hash AIM hash app's name
+	3. ModuleDirectory - 'C:\TicketingModules' - Mandatory, permission rrw to 'IIS APPPOOL\PasswordVaultWebAccessPool'
+	4. BypassID - 'BYPASSTICKET' - Optional
+	5. APIURL - 'https://www.jhdomain.com:3000' - Mandatory
+	6. INCduration - '48' - Optional - Default 24 hours, in terms of hours
+	7. CheckApprover - 'true' - Optional - Default true - Check if Approver != Requester
+	8. CheckRequester - 'false' - Optional - Default true - Check if Requester == Requester
+	9. CheckTime - 'true' - Optional - Default true - Validate current time within vts vte
+	10. CheckObj - 'false' - Optional - Default true - Validate requested obj!
+
