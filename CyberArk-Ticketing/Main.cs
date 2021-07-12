@@ -190,13 +190,15 @@ namespace CyberArk.Samples
             try
             {
                 //Validate if the current APP matches the HASH in PVWA parameters
-
-                string ScriptHash = GetHash(paramAPIName, paramHashApp);
-
-                if (!(ValidateHash(ScriptHash, paramAPIHash)))
+                if (paramAPIHash.Trim().ToUpper() != "NULL")
                 {
-                    ticketingOutputUserMessage = msgInvalidHash;
-                    return false;
+                    string ScriptHash = GetHash(paramAPIName, paramHashApp);
+
+                    if (!(ValidateHash(ScriptHash, paramAPIHash)))
+                    {
+                        ticketingOutputUserMessage = msgInvalidHash;
+                        return false;
+                    }
                 }
 
                 // if matching BypassID, returns true
@@ -365,11 +367,11 @@ namespace CyberArk.Samples
 
         bool ValidateHash(string apiHash, string pAPIHash)
         {
-            if (apiHash.Trim().ToUpper() == pAPIHash.Trim().ToUpper())
+            if (pAPIHash.Trim().ToUpper() == "NULL")
             {
                 return true;
             }
-            else if (pAPIHash.Trim().ToUpper() == "NULL")
+            else if (apiHash.Trim().ToUpper() == pAPIHash.Trim().ToUpper())
             {
                 return true;
             }
@@ -382,6 +384,10 @@ namespace CyberArk.Samples
         // base64 encode
         private string En64(string input)
         {
+            if(input.Length == 0)
+            {
+                input = "VALUE NOT FOUND";
+            }
             return (System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(input)));
         }
 
@@ -458,8 +464,12 @@ namespace CyberArk.Samples
 
 
             Match match11 = Regex.Match(checkParameters, "INCduration\" Value=\"(.*?)\"");
-            int.TryParse(match11.Groups[1].Value, out INCduration);
-            
+            if (match11.Groups[1].Value.Length > 0)
+            {
+                int.TryParse(match11.Groups[1].Value, out INCduration);
+            }
+
+
             Match match12 = Regex.Match(checkParameters, "CheckTime\" Value=\"(.*?)\"");
             if (match12.Groups[1].Value.Length > 0)
             {

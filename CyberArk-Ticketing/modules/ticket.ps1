@@ -239,7 +239,7 @@ switch($strActionName)
 
             if ($respond.get_length() -eq 0)
             {
-                $ToCyberArk.errormsg = 64encode "Error during Ticket creation."
+                $ToCyberArk.errormsg = 64encode "Error occured during ticket creation."
             }
             else
             {
